@@ -202,34 +202,37 @@ const renderDashboard = () => {
     const activeMeds = state.medications.filter(m => m.frequency === 'daily' || m.frequency === 'asNeeded');
     const takenCount = activeMeds.filter(m => isTakenToday(m)).length;
 
-    // Adherence History (Last 7 Days)
+    // Adherence History (Current Week: Mon-Sun)
     const today = new Date();
-    let adherenceHtml = '<div class="adherence-strip">';
-    for (let i = 6; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(today.getDate() - i);
-        const dateStr = d.toDateString();
+    const currentDay = today.getDay(); // 0 (Sun) - 6 (Sat)
+    const distanceToMonday = currentDay === 0 ? 6 : currentDay - 1;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - distanceToMonday);
 
-        // Check if all meds were taken on this day
-        // Simplified: If at least one active med was taken, show green.
-        // Better: Check percentage.
-        // For this MVP: If ANY med was taken, show green (or partial).
-        // Let's go strict: All active meds must be taken.
+    let adherenceHtml = '<div class="adherence-strip">';
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        const dateStr = d.toDateString();
 
         // Get history for this day
         const dayActiveMeds = state.medications.filter(m => (m.frequency === 'daily' || m.frequency === 'asNeeded') && new Date(m.createdAt) <= d);
 
-        let statusClass = 'neutral'; // future or no meds
-        if (dayActiveMeds.length > 0) {
+        let statusClass = 'neutral';
+        const isFuture = d > today && d.toDateString() !== today.toDateString();
+
+        if (isFuture) {
+            statusClass = 'neutral';
+        } else if (dayActiveMeds.length > 0) {
             const medsTakenCount = dayActiveMeds.filter(m => m.history.some(h => new Date(h).toDateString() === dateStr)).length;
+
             if (medsTakenCount === dayActiveMeds.length && medsTakenCount > 0) statusClass = 'full';
             else if (medsTakenCount > 0) statusClass = 'partial';
             else statusClass = 'none';
         }
 
-        // If today and no meds taken yet, keep neutral? No, show 'none' or 'neutral'
+        // Fix for Today (if empty and day not over)
         if (dateStr === today.toDateString()) {
-            // For today, if count > 0 is partial or full. if 0, neutral (day not over)
             if (takenCount === activeMeds.length && activeMeds.length > 0) statusClass = 'full';
             else if (takenCount > 0) statusClass = 'partial';
             else statusClass = 'neutral';
