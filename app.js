@@ -122,6 +122,38 @@ appointmentForm.addEventListener('submit', (e) => {
     const timePart = formData.get('appt-time');
     const isoDate = `${datePart}T${timePart}`;
 
+    // Clash Detection Logic (Assume 60 min duration)
+    const proposedStart = new Date(isoDate);
+    const proposedEnd = new Date(proposedStart.getTime() + 60 * 60 * 1000);
+
+    const checkCollision = (start, end, excludeId = null) => {
+        return state.appointments.some(appt => {
+            if (excludeId && appt.id === excludeId) return false;
+            const apptStart = new Date(appt.date);
+            const apptEnd = new Date(apptStart.getTime() + 60 * 60 * 1000);
+            return apptStart < end && apptEnd > start;
+        });
+    };
+
+    if (checkCollision(proposedStart, proposedEnd, state.editingId)) {
+        // Find next available slot
+        let nextTime = new Date(proposedStart);
+        let found = false;
+        // Search for next 24 slots (1 day)
+        for (let i = 0; i < 24; i++) {
+            nextTime = new Date(nextTime.getTime() + 60 * 60 * 1000);
+            const nextEnd = new Date(nextTime.getTime() + 60 * 60 * 1000);
+            if (!checkCollision(nextTime, nextEnd, state.editingId)) {
+                found = true;
+                break;
+            }
+        }
+
+        const timeString = nextTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        showToast(`❌ Clash detected! Try ${timeString} instead.`, 'error');
+        return; // Block submission
+    }
+
     const data = {
         title: formData.get('title'),
         date: isoDate,
