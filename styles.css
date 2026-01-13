@@ -604,3 +604,12 @@ body {
     font-size: 0.75rem;
     color: var(--text-muted);
 }
+/* Form Layouts */
+.form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.form-row .form-group {
+    flex: 1;
+}

@@ -63,7 +63,9 @@ const openModal = (type = null, id = null) => {
             const item = state.appointments.find(a => a.id === id);
             showAppointmentForm();
             appointmentForm.elements['title'].value = item.title;
-            appointmentForm.elements['date'].value = item.date;
+            const [datePart, timePart] = item.date.split('T');
+            appointmentForm.elements['appt-date'].value = datePart;
+            appointmentForm.elements['appt-time'].value = timePart;
             appointmentForm.elements['location'].value = item.location;
             appointmentForm.elements['notes'].value = item.notes;
         } else {
@@ -76,7 +78,7 @@ const openModal = (type = null, id = null) => {
         }
     } else {
         // Create Mode
-        modalTitle.textContent = 'Add New';
+        modalTitle.textContent = 'Add';
         // Default View Logic
         if (state.currentView === 'medications') {
             showMedicationForm();
@@ -114,9 +116,15 @@ modalOverlay.addEventListener('click', (e) => {
 appointmentForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(appointmentForm);
+
+    // Combine date and time
+    const datePart = formData.get('appt-date');
+    const timePart = formData.get('appt-time');
+    const isoDate = `${datePart}T${timePart}`;
+
     const data = {
         title: formData.get('title'),
-        date: formData.get('date'),
+        date: isoDate,
         location: formData.get('location'),
         notes: formData.get('notes')
     };
