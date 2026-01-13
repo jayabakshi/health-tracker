@@ -198,9 +198,51 @@ const renderDashboard = () => {
         .sort((a, b) => new Date(a.date) - new Date(b.date))
         .slice(0, 3);
 
-    // Calculate Adherence for today
+    // Adherence Stats
     const activeMeds = state.medications.filter(m => m.frequency === 'daily' || m.frequency === 'asNeeded');
     const takenCount = activeMeds.filter(m => isTakenToday(m)).length;
+
+    // Adherence History (Last 7 Days)
+    const today = new Date();
+    let adherenceHtml = '<div class="adherence-strip">';
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - i);
+        const dateStr = d.toDateString();
+
+        // Check if all meds were taken on this day
+        // Simplified: If at least one active med was taken, show green.
+        // Better: Check percentage.
+        // For this MVP: If ANY med was taken, show green (or partial).
+        // Let's go strict: All active meds must be taken.
+
+        // Get history for this day
+        const dayActiveMeds = state.medications.filter(m => (m.frequency === 'daily' || m.frequency === 'asNeeded') && new Date(m.createdAt) <= d);
+
+        let statusClass = 'neutral'; // future or no meds
+        if (dayActiveMeds.length > 0) {
+            const medsTakenCount = dayActiveMeds.filter(m => m.history.some(h => new Date(h).toDateString() === dateStr)).length;
+            if (medsTakenCount === dayActiveMeds.length && medsTakenCount > 0) statusClass = 'full';
+            else if (medsTakenCount > 0) statusClass = 'partial';
+            else statusClass = 'none';
+        }
+
+        // If today and no meds taken yet, keep neutral? No, show 'none' or 'neutral'
+        if (dateStr === today.toDateString()) {
+            // For today, if count > 0 is partial or full. if 0, neutral (day not over)
+            if (takenCount === activeMeds.length && activeMeds.length > 0) statusClass = 'full';
+            else if (takenCount > 0) statusClass = 'partial';
+            else statusClass = 'neutral';
+        }
+
+        adherenceHtml += `
+            <div class="ad-day" title="${d.toLocaleDateString()}">
+                <div class="ad-indicator ${statusClass}"></div>
+                <div class="ad-label">${d.toLocaleDateString('en-US', { weekday: 'narrow' })}</div>
+            </div>
+        `;
+    }
+    adherenceHtml += '</div>';
 
     let html = `
         <div class="dashboard-stats">
@@ -212,6 +254,11 @@ const renderDashboard = () => {
                 <div class="stat-value">${takenCount}/${activeMeds.length}</div>
                 <div class="stat-label">Meds Taken Today</div>
             </div>
+        </div>
+        
+        <h3 style="margin-bottom: 1rem;">Adherence History (Last 7 Days)</h3>
+        <div class="card" style="margin-bottom: 2rem;">
+            ${adherenceHtml}
         </div>
         
         <h3 style="margin-bottom: 1rem;">Upcoming Appointments</h3>
@@ -366,6 +413,36 @@ const render = () => {
     else if (state.currentView === 'calendar') renderCalendar();
 };
 
+const showToast = (message, type = 'info') => {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <div class="toast-content">
+            <div class="toast-title">${type === 'success' ? 'Success' : 'Reminder'}</div>
+            <div class="toast-msg">${message}</div>
+        </div>
+        <button class="toast-close">&times;</button>
+    `;
+
+    const container = document.getElementById('toast-container');
+    container.appendChild(toast);
+
+    // Trigger animation
+    requestAnimationFrame(() => toast.classList.add('show'));
+
+    // Auto dismiss
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+
+    // Manual dismiss
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    });
+};
+
 // Reminder System (Poller)
 setInterval(() => {
     const now = new Date();
@@ -373,7 +450,7 @@ setInterval(() => {
 
     state.medications.forEach(med => {
         if (med.time === currentTime && !isTakenToday(med) && !med.lastReminded) {
-            alert(`⏰ Medication Reminder: It's time to take ${med.name} (${med.dosage})`);
+            showToast(`Time to take ${med.name} (${med.dosage})`, 'info');
             med.lastReminded = true;
             setTimeout(() => med.lastReminded = false, 60000);
         }
