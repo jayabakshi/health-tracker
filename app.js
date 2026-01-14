@@ -1,16 +1,11 @@
 // App State
 const state = {
-    appointments: JSON.parse(localStorage.getItem('appointments')) || [],
-    medications: JSON.parse(localStorage.getItem('medications')) || [],
+    appointments: [],
+    medications: [],
     currentView: 'dashboard',
     editingId: null,
     editingType: null // 'appointment' or 'medication'
 };
-
-// Migrate Data Structure (Ensure medications have history)
-state.medications.forEach(med => {
-    if (!med.history) med.history = [];
-});
 
 // DOM Elements
 const contentArea = document.getElementById('content-area');
@@ -23,10 +18,53 @@ const modalTitle = document.getElementById('modal-title');
 const appointmentForm = document.getElementById('appointment-form');
 const medicationForm = document.getElementById('medication-form');
 
+// API Helpers
+const api = {
+    async get(endpoint) {
+        const res = await fetch(`/api/${endpoint}`);
+        return res.json();
+    },
+    async post(endpoint, data) {
+        const res = await fetch(`/api/${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        return res.json();
+    },
+    async put(endpoint, id, data) {
+        const res = await fetch(`/api/${endpoint}/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        return res.json();
+    },
+    async delete(endpoint, id) {
+        await fetch(`/api/${endpoint}/${id}`, { method: 'DELETE' });
+    }
+};
+
 // Utils
+const loadState = async () => {
+    try {
+        const [appointments, medications] = await Promise.all([
+            api.get('appointments'),
+            api.get('medications')
+        ]);
+        state.appointments = appointments;
+        state.medications = medications;
+        render();
+    } catch (error) {
+        console.error('Failed to load state:', error);
+        showToast('❌ Failed to load data from server.', 'error');
+    }
+};
+
 const saveState = () => {
-    localStorage.setItem('appointments', JSON.stringify(state.appointments));
-    localStorage.setItem('medications', JSON.stringify(state.medications));
+    // Note: Since we're using a backend, we usually update specific items.
+    // However, the original code used saveState to trigger re-renders and persist.
+    // In the refactored version, we call API methods and then re-render.
     render();
 };
 
@@ -37,7 +75,7 @@ const formatDate = (dateString) => {
 
 const isTakenToday = (medication) => {
     const today = new Date().toDateString();
-    return medication.history.some(timestamp => new Date(timestamp).toDateString() === today);
+    return medication.history && medication.history.some(timestamp => new Date(timestamp).toDateString() === today);
 };
 
 // Navigation
@@ -113,7 +151,7 @@ modalOverlay.addEventListener('click', (e) => {
 });
 
 // Form Submissions
-appointmentForm.addEventListener('submit', (e) => {
+appointmentForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(appointmentForm);
 
@@ -161,25 +199,25 @@ appointmentForm.addEventListener('submit', (e) => {
         notes: formData.get('notes')
     };
 
-    if (state.editingId) {
-        // Edit
-        const index = state.appointments.findIndex(a => a.id === state.editingId);
-        if (index !== -1) {
-            state.appointments[index] = { ...state.appointments[index], ...data };
+    try {
+        if (state.editingId) {
+            const updated = await api.put('appointments', state.editingId, data);
+            const index = state.appointments.findIndex(a => a.id === state.editingId);
+            if (index !== -1) state.appointments[index] = updated;
+            showToast('✅ Appointment updated!', 'success');
+        } else {
+            const created = await api.post('appointments', data);
+            state.appointments.push(created);
+            showToast('✅ Appointment scheduled!', 'success');
         }
-    } else {
-        // Create
-        state.appointments.push({
-            id: Date.now(),
-            ...data,
-            createdAt: new Date().toISOString()
-        });
+        render();
+        closeModal();
+    } catch (error) {
+        showToast('❌ Failed to save appointment.', 'error');
     }
-    saveState();
-    closeModal();
 });
 
-medicationForm.addEventListener('submit', (e) => {
+medicationForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(medicationForm);
     const data = {
@@ -189,44 +227,59 @@ medicationForm.addEventListener('submit', (e) => {
         time: formData.get('time')
     };
 
-    if (state.editingId) {
-        const index = state.medications.findIndex(m => m.id === state.editingId);
-        if (index !== -1) {
-            state.medications[index] = { ...state.medications[index], ...data };
+    try {
+        if (state.editingId) {
+            const updated = await api.put('medications', state.editingId, data);
+            const index = state.medications.findIndex(m => m.id === state.editingId);
+            if (index !== -1) state.medications[index] = updated;
+            showToast('✅ Medication updated!', 'success');
+        } else {
+            const created = await api.post('medications', data);
+            state.medications.push(created);
+            showToast('✅ Medication added!', 'success');
         }
-    } else {
-        state.medications.push({
-            id: Date.now(),
-            ...data,
-            history: [],
-            createdAt: new Date().toISOString()
-        });
+        render();
+        closeModal();
+    } catch (error) {
+        showToast('❌ Failed to save medication.', 'error');
     }
-    saveState();
-    closeModal();
 });
 
 // Actions
-window.deleteItem = (type, id) => {
+window.deleteItem = async (type, id) => {
     if (!confirm('Are you sure?')) return;
-    if (type === 'appointment') {
-        state.appointments = state.appointments.filter(a => a.id !== id);
-    } else {
-        state.medications = state.medications.filter(m => m.id !== id);
+    try {
+        const endpoint = type === 'appointment' ? 'appointments' : 'medications';
+        await api.delete(endpoint, id);
+        if (type === 'appointment') {
+            state.appointments = state.appointments.filter(a => a.id !== id);
+        } else {
+            state.medications = state.medications.filter(m => m.id !== id);
+        }
+        showToast('✅ Item deleted.', 'success');
+        render();
+    } catch (error) {
+        showToast('❌ Failed to delete item.', 'error');
     }
-    saveState();
 };
 
 window.editItem = (type, id) => {
     openModal(type, id);
 };
 
-window.markTaken = (id) => {
+window.markTaken = async (id) => {
     const med = state.medications.find(m => m.id === id);
     if (med) {
-        med.history.push(new Date().toISOString());
-        saveState();
-        // Visual feedack handled by render
+        const history = [...(med.history || []), new Date().toISOString()];
+        try {
+            const updated = await api.put('medications', id, { history });
+            const index = state.medications.findIndex(m => m.id === id);
+            if (index !== -1) state.medications[index] = updated;
+            showToast('✅ Medication marked as taken!', 'success');
+            render();
+        } catch (error) {
+            showToast('❌ Failed to update medication.', 'error');
+        }
     }
 };
 
@@ -264,7 +317,7 @@ const renderDashboard = () => {
         if (isFuture) {
             statusClass = 'neutral';
         } else if (dayActiveMeds.length > 0) {
-            const medsTakenCount = dayActiveMeds.filter(m => m.history.some(h => new Date(h).toDateString() === dateStr)).length;
+            const medsTakenCount = dayActiveMeds.filter(m => m.history && m.history.some(h => new Date(h).toDateString() === dateStr)).length;
 
             if (medsTakenCount === dayActiveMeds.length && medsTakenCount > 0) statusClass = 'full';
             else if (medsTakenCount > 0) statusClass = 'partial';
@@ -467,7 +520,12 @@ const showToast = (message, type = 'info') => {
         <button class="toast-close">&times;</button>
     `;
 
-    const container = document.getElementById('toast-container');
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
     container.appendChild(toast);
 
     // Trigger animation
@@ -501,4 +559,4 @@ setInterval(() => {
 }, 5000);
 
 // Init
-render();
+loadState();

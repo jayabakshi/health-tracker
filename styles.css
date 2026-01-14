@@ -1,27 +1,62 @@
 :root {
-    --primary-h: 180;
-    --primary-s: 70%;
-    --primary-l: 40%;
+    /* Premium Health Tech Palette */
+    --primary-h: 174;
+    --primary-s: 60%;
+    --primary-l: 36%;
+    /* Deep Teal */
     --primary: hsl(var(--primary-h), var(--primary-s), var(--primary-l));
-    --primary-light: hsl(var(--primary-h), var(--primary-s), 90%);
-    --primary-dark: hsl(var(--primary-h), var(--primary-s), 25%);
+    --primary-light: hsl(var(--primary-h), 50%, 92%);
+    /* Soft background tint */
+    --primary-dark: hsl(var(--primary-h), 65%, 20%);
 
-    --accent-h: 340;
+    --secondary-h: 215;
+    --secondary: hsl(var(--secondary-h), 25%, 27%);
+    /* Deep Slate for contrast */
+
+    --accent-h: 330;
     --accent: hsl(var(--accent-h), 80%, 60%);
+    /* Rose Pink */
 
-    --bg-body: #f8fafc;
+    --bg-body: #f1f5f9;
+    /* Slate 100 - slightly darker than 50 for better card contrast */
     --bg-surface: #ffffff;
+
     --text-main: #0f172a;
+    /* Slate 900 */
     --text-muted: #64748b;
+    /* Slate 500 */
+    --text-light: #94a3b8;
+    /* Slate 400 */
+
     --border: #e2e8f0;
+    /* Slate 200 */
+    --border-hover: #cbd5e1;
+    /* Slate 300 */
 
+    /* Spacing System */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+
+    /* Modern Radius */
     --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 20px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-full: 9999px;
 
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    /* Elevating Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-highlight: 0 0 0 3px rgba(13, 148, 136, 0.2);
+    /* For focus states */
+
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -492,7 +527,9 @@ body {
     border-radius: var(--radius-sm);
     border: 1px solid var(--border);
     font-size: 0.9rem;
-}/* Toast Notifications */
+}
+
+/* Toast Notifications */
 .toast-container {
     position: fixed;
     bottom: 2rem;
@@ -557,6 +594,7 @@ body {
 .toast-close:hover {
     color: var(--text-main);
 }
+
 /* Adherence Strip */
 .adherence-strip {
     display: flex;
@@ -604,6 +642,7 @@ body {
     font-size: 0.75rem;
     color: var(--text-muted);
 }
+
 /* Form Layouts */
 .form-row {
     display: flex;
