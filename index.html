@@ -5,39 +5,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HealthTrend | Smart Health Tracker</title>
+    <meta name="description" content="Personal health tracker for appointments, medications, and wellness stats.">
+    <!-- Inline Favicon (Teal Cross) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect x=%2235%22 y=%2210%22 width=%2230%22 height=%2280%22 rx=%225%22 fill=%22%2306b6d4%22/><rect x=%2210%22 y=%2235%22 width=%2280%22 height=%2230%22 rx=%225%22 fill=%22%2306b6d4%22/></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 
-<body>
+<body class="dark-mode">
     <div class="app-container">
-        <aside class="sidebar">
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+        <aside id="sidebar" class="sidebar">
             <div class="brand">
-                <div class="logo-icon">H</div>
+                <div class="logo-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" />
+                    </svg>
+                </div>
                 <h1>HealthTrend</h1>
             </div>
 
             <nav class="nav-menu">
-                <button class="nav-btn active" data-view="dashboard">
-                    <span class="icon">📊</span> Dashboard
+                <button class="nav-btn active" data-view="dashboard" aria-label="View Dashboard">
+                    <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="9"></rect>
+                        <rect x="14" y="3" width="7" height="5"></rect>
+                        <rect x="14" y="12" width="7" height="9"></rect>
+                        <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                    <span>Dashboard</span>
                 </button>
-                <button class="nav-btn" data-view="appointments">
-                    <span class="icon">📅</span> Appointments
+                <button class="nav-btn" data-view="appointments" aria-label="View Appointments">
+                    <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>Appointments</span>
+                    <div id="appointment-badge" class="nav-badge hidden"></div>
                 </button>
-                <button class="nav-btn" data-view="medications">
-                    <span class="icon">💊</span> Medications
+                <button class="nav-btn" data-view="medications" aria-label="View Medications">
+                    <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10.5 22L22 10.5a6.36 6.36 0 0 0-9-9L1.5 13a6.36 6.36 0 0 0 9 9z"></path>
+                        <line x1="7" y1="11" x2="13" y2="17"></line>
+                    </svg>
+                    <span>Medications</span>
                 </button>
-                <button class="nav-btn" data-view="calendar">
-                    <span class="icon">📆</span> Calendar
+                <button class="nav-btn" data-view="calendar" aria-label="View Calendar">
+                    <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <path d="M16 2v4M8 2v4M3 10h18"></path>
+                        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"></path>
+                    </svg>
+                    <span>Calendar</span>
                 </button>
             </nav>
 
             <div class="user-profile">
-                <div class="avatar">U</div>
+                <div id="user-avatar" class="avatar">U</div>
                 <div class="user-info">
-                    <span class="name">User</span>
+                    <span id="user-display-name" class="name">Guest User</span>
                     <span class="status">Health Tracker</span>
                 </div>
             </div>
@@ -45,81 +77,179 @@
 
         <main class="main-content">
             <header class="top-bar">
-                <h2 id="page-title">Dashboard</h2>
+                <div class="bar-left">
+                    <button id="mobile-toggle" class="mobile-toggle" aria-label="Toggle Navigation">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <h2 id="page-title">Dashboard</h2>
+                </div>
                 <div class="actions">
-                    <button id="add-new-btn" class="primary-btn">+ Add</button>
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">
+                        <svg id="sun-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="hidden">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <svg id="moon-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                    <button id="export-btn" class="secondary-btn" aria-label="Export Data">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>Export</span>
+                    </button>
+                    <button id="print-btn" class="secondary-btn" aria-label="Print Summary">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                            <rect x="6" y="14" width="12" height="8"></rect>
+                        </svg>
+                        <span>Print</span>
+                    </button>
+                    <button id="add-new-btn" class="primary-btn">+ Add New</button>
                 </div>
             </header>
 
             <div id="content-area" class="content-area">
+                <!-- Skeleton Loader (Hidden after first load) -->
+                <div id="skeleton-loader" class="skeleton-container hidden">
+                    <div class="skeleton-stat-grid">
+                        <div class="skeleton-item square"></div>
+                        <div class="skeleton-item square"></div>
+                    </div>
+                    <div class="skeleton-item long"></div>
+                    <div class="skeleton-grid">
+                        <div class="skeleton-item card"></div>
+                        <div class="skeleton-item card"></div>
+                    </div>
+                </div>
+
                 <!-- Dynamic Content Will Be Injected Here -->
             </div>
         </main>
     </div>
 
-    <!-- Toast Container -->
+    <!-- Toast Notifications -->
     <div id="toast-container" class="toast-container"></div>
 
     <!-- Modals -->
-    <div id="modal-overlay" class="modal-overlay hidden">
-        <div class="modal">
+    <dialog id="main-modal" class="modern-modal">
+        <div class="modal-inner">
             <div class="modal-header">
                 <h3 id="modal-title">Add Item</h3>
-                <button class="close-modal">&times;</button>
+                <button id="close-modal" class="icon-btn" aria-label="Close Modal">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="appointment-form" class="hidden">
+                <form id="appointment-form" class="hidden" novalidate>
                     <div class="form-group">
-                        <label>Title / Doctor</label>
-                        <input type="text" name="title" required placeholder="e.g. Dr. Smith - Dentist">
+                        <label for="appt-title">Title / Doctor</label>
+                        <input type="text" id="appt-title" name="title" required placeholder="e.g. Dr. Smith - General Checkup">
+                        <span class="error-msg">Please enter a title</span>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Date</label>
-                            <input type="date" name="appt-date" required>
+                            <label for="appt-date">Date</label>
+                            <input type="date" id="appt-date" name="appt-date" required>
+                            <span class="error-msg">Select a date</span>
                         </div>
                         <div class="form-group">
-                            <label>Time</label>
-                            <input type="time" name="appt-time" required>
+                            <label for="appt-time">Time</label>
+                            <input type="time" id="appt-time" name="appt-time" required>
+                            <span class="error-msg">Select a time</span>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Location</label>
-                        <input type="text" name="location" placeholder="e.g. City Clinic">
+                        <label for="appt-location">Location</label>
+                        <input type="text" id="appt-location" name="location" placeholder="e.g. Health Plaza, Room 204">
                     </div>
                     <div class="form-group">
-                        <label>Notes</label>
-                        <textarea name="notes" rows="3"></textarea>
+                        <label for="appt-notes">Notes</label>
+                        <textarea id="appt-notes" name="notes" rows="3" placeholder="Symptoms, instructions, etc."></textarea>
                     </div>
-                    <button type="submit" class="submit-btn">Save Appointment</button>
+                    <button type="submit" class="submit-btn" id="save-appt-btn">Save Appointment</button>
                 </form>
 
-                <form id="medication-form" class="hidden">
+                <form id="medication-form" class="hidden" novalidate>
                     <div class="form-group">
-                        <label>Medication Name</label>
-                        <input type="text" name="name" required placeholder="e.g. Amoxicillin">
+                        <label for="med-name">Medication Name</label>
+                        <input type="text" id="med-name" name="name" required placeholder="e.g. Vitamin D3">
+                        <span class="error-msg">Please enter medication name</span>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="med-dosage">Dosage</label>
+                            <input type="text" id="med-dosage" name="dosage" placeholder="e.g. 1000 IU">
+                        </div>
+                        <div class="form-group">
+                            <label for="med-frequency">Frequency</label>
+                            <select id="med-frequency" name="frequency">
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="asNeeded">As Needed</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label>Dosage</label>
-                        <input type="text" name="dosage" placeholder="e.g. 500mg">
+                        <label for="med-time">Scheduled Time</label>
+                        <input type="time" id="med-time" name="time" required>
+                        <span class="error-msg">Select a time</span>
                     </div>
-                    <div class="form-group">
-                        <label>Frequency</label>
-                        <select name="frequency">
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="asNeeded">As Needed</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Time</label>
-                        <input type="time" name="time" required>
-                    </div>
-                    <button type="submit" class="submit-btn">Save Medication</button>
+                    <button type="submit" class="submit-btn" id="save-med-btn">Save Medication</button>
                 </form>
             </div>
         </div>
+    </dialog>
+
+    <!-- Welcome Modal -->
+    <dialog id="welcome-modal" class="modern-modal">
+        <div class="modal-inner">
+            <div class="modal-header">
+                <h3>Welcome to HealthTrend</h3>
+            </div>
+            <div class="modal-body">
+                <p>Track your health journey with ease. Let's get started with your basic info.</p>
+                <form id="welcome-form" novalidate>
+                    <div class="form-group">
+                        <label for="user-name">Your Name</label>
+                        <input type="text" id="user-name" name="userName" required placeholder="Enter your name">
+                        <span class="error-msg">Name is required</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-age">Your Age</label>
+                        <input type="number" id="user-age" name="userAge" required placeholder="Enter your age" min="1" max="150">
+                        <span class="error-msg">Enter a valid age</span>
+                    </div>
+                    <button type="submit" class="submit-btn">Continue to Dashboard</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Calendar Popover (Hidden Template) -->
+    <div id="calendar-popover" class="calendar-popover hidden">
+        <div class="popover-header">
+            <h4>Events for <span id="popover-date"></span></h4>
+            <button id="close-popover" class="close-popover-btn">&times;</button>
+        </div>
+        <div id="popover-content" class="popover-content"></div>
     </div>
+
+    <!-- Print Template (Hidden from screen) -->
+    <div id="print-section" class="print-only"></div>
 
     <script src="app.js"></script>
 </body>

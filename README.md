@@ -1,42 +1,43 @@
-# HealthTrend - Smart Health Tracker
+# 🏥 HealthTrend - Advanced Health Tracker
 
-HealthTrend is a modern, responsive web application for tracking healthcare appointments and medication schedules.
+**HealthTrend** is a premium, responsive health management dashboard built with pure HTML, CSS, and JavaScript. It's designed to give you a clear, visual overview of your medical health journey while maintaining 100% privacy via local storage.
 
-## Features
-- **Dashboard**: Quick overview of upcoming appointments and medication adherence.
-- **Appointments**: Book, edit, and track doctor visits.
-- **Medications**: Log medications, set schedules, and mark them as taken.
-- **Calendar**: Visual month-view of your health schedule.
-- **Local Privacy**: All data is stored in your browser's LocalStorage. No data is sent to supreme servers.
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Privacy](https://img.shields.io/badge/privacy-100%25_local-orange)
 
-## Setup (Local)
-Simply open `index.html` in your browser.
-Or run a local server:
-\`\`\`bash
-python -m http.server 8080
-\`\`\`
+## ✨ New in v2.0
+- **💎 Glassmorphism UI**: High-end midnight-blue dashboard with backdrop blur effects.
+- **🔥 Medication Streaks**: Stay motivated with visual daily streaks for your meds.
+- **📊 Health Stats & Trends**: Real-time summary cards and monthly appointment charts.
+- **🗓️ Smart Calendar**: Interactive monthly view with event popovers and activity dots.
+- **🌓 Dark/Light Mode**: Seamless theme switching with persistent preferences.
+- **⌨️ Keyboard Shortcuts**: Power-user navigation (`N`, `Esc`, `1-4`).
+- **🖨️ Professional Export**: Print your health summary to PDF or export raw data as JSON.
 
-## Deployment
+## 🚀 Getting Started
 
-Since this is a static web application (HTML/CSS/JS), it can be deployed for free on many platforms.
+### Local Setup
+Simply clone this repository and open `index.html` in any modern web browser.
+```bash
+git clone https://github.com/jayabakshi/health-tracker.git
+cd health-tracker
+# Open index.html directly
+```
 
-### Option 1: GitHub Pages (Recommended)
-1. Initialize git (if not already done): \`git init\`
-2. Commit your files: \`git add . && git commit -m "Ready for deploy"\`
-3. Create a repository on GitHub.
-4. Push your code:
-   \`\`\`bash
-   git remote add origin https://github.com/YOUR_USERNAME/health-tracker.git
-   git push -u origin main
-   \`\`\`
-5. Go to Repository **Settings** > **Pages**.
-6. Set **Source** to \`main\` branch.
-7. Your site will be live at \`https://YOUR_USERNAME.github.io/health-tracker\`.
+### Development
+Everything is contained within three core files for maximum simplicity:
+- `index.html`: Modern semantic structure & SVGs.
+- `styles.css`: Glassmorphism design system & animations.
+- `app.js`: State management, logic, & storage.
 
-### Option 2: Netlify / Vercel
-1. Create an account on [Netlify](https://netlify.com) or [Vercel](https://vercel.com).
-2. Drag and drop the \`health-tracker\` folder into their dashboard.
-3. It will be deployed instantly.
+## 🔒 Privacy & Data
+Your health data is sensitive. That's why HealthTrend stores everything **locally in your browser**. 
+- No cloud syncing, no trackers, no external APIs.
+- To transfer data to another device, use the **Export** feature to download your encrypted JSON profile.
 
-### Option 3: Backend Integration
-Currently, this app is **Frontend Only**. To enable syncing across devices, a backend API would be required.
+## 📜 License
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+Built with ❤️ for better health tracking.
